@@ -43,8 +43,8 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         
         # We have a pretrained model now. 
         layer_config=train_model.layers[1].get_config()
-        layer_config['output_mode']='error'
         self.layer="E0"
+        layer_config['output_mode']=self.layer
         self.input_shape=list(train_model.layers[0].batch_input_shape[1:])
         # NOTE: We need to remember to set the input shape at 0 to the number of images in the series.
         self.prior=hickle.load(prior)
@@ -71,25 +71,31 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         prior-=logsumexp(prior)
         
         nt=stimarray.shape[0]
+        print("nt: %d" % nt)
+        nt=1700
         batch_size=min(nt, 100)
+        print("batch_size: %d" % batch_size)
+        
         self.input_shape[0]=nt
         inputs=Input(shape=tuple(self.input_shape))
+        print("input shape: ")
+        print(self.input_shape)
         predictions=self.test_prednet(inputs)
         test_model=Model(inputs=inputs, outputs=predictions)
-        test_generator=PreloadedSequence(stimarray, nt, sequence_start_mode="unique", data_format=self.data_format)
+        test_generator=PreloadedSequence(stimarray, nt, batch_size=batch_size, sequence_start_mode="unique", data_format=self.data_format)
         
-        print("Testing set:")
         Xtest=test_generator.create_all()
-        print(Xtest)
         print("Predicting...")
         #ASSUMPTION: it is safe to set the batch size equal to the number of inputs here since we won't be dealing with many inputs. 
         predictions=test_model.predict(Xtest, batch_size)
         print("Shape of outputs:")
-        
+        print(predictions.shape)
         # Now that we have a set of errors, let's do stuff:
         predictions=predictions[0] # Now the first index will be the image, then channels, then pixels.
+        print(predictions.shape)
         for i in range(predictions.shape[0]): # For each prediction:
-            predictions[i]=predictions[i].sum(axis=0) # Sum all channels
+            print(predictions[i].shape)
+            predictions[i]=predictions[i].sum(axis=0) # Sum all channels. axis=0 was summing all elements. Whoops!
             predictions[i]=predictions[i]*prior # Scale by resized prior distribution.
         return predictions
         

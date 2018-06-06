@@ -16,12 +16,23 @@ def main(args):
         print("Usage: runmodel.py infile prior [-o/-d] [outfile/outdir]")
         print("If -o is specified, then all predictions are dumped to a hickle.")
         print("Else, all predictions are dumped to images in the directory specified.")
+        print("If 'prior' is 'extract', then this program will instead extract an existing predictions hickle into the specified output directory.")
         return
     
     infile=args[1]
     prior=args[2]
     outopt=args[3]
     outfile=args[4]
+    
+    if prior=="extract":
+        predictions=hickle.load(infile)
+        predictions=predictions[0] # IIRC, there's a useless first dimension in each model output.
+        if not os.path.exists(outfile):
+            os.makedirs(outfile)
+        
+        for p in range(predictions.shape[0]):
+            misc.imsave(predictions[p], os.path.join(outfile, "%d.png" % p))
+        return
     
     indata=hickle.load(infile)
     m=model.PredSaliencyModel(None, prior) # Prior is passed as a filename and the first argument has yet to be defined.
@@ -37,7 +48,7 @@ def main(args):
             os.makedirs(outfile)
         
         for p in range(predictions.shape[0]):
-            misc.imwrite(predictions[p], os.path.join(outfile, "%d.png" % p))
+            misc.imsave(predictions[p], os.path.join(outfile, "%d.png" % p))
     
 
 
