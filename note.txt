@@ -1,0 +1,1 @@
+This repository was forked from coxlab/prednet as part of a small project within the CoxLab to see if useful visual saliency predictions could be extracted from the network.
