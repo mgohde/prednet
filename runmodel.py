@@ -9,6 +9,7 @@ import sys
 import hickle
 from scipy import misc
 from kitti_settings import *
+import numpy as np
 
 
 def main(args):
@@ -26,12 +27,13 @@ def main(args):
     
     if prior=="extract":
         predictions=hickle.load(infile)
-        predictions=predictions[0] # IIRC, there's a useless first dimension in each model output.
         if not os.path.exists(outfile):
             os.makedirs(outfile)
         
         for p in range(predictions.shape[0]):
-            misc.imsave(predictions[p], os.path.join(outfile, "%d.png" % p))
+            #arr=predictions[p]-np.min(predictions[p])
+            arr=np.abs(predictions[p])
+            misc.imsave(os.path.join(outfile, "%d.png" % p), arr)
         return
     
     indata=hickle.load(infile)
@@ -41,6 +43,8 @@ def main(args):
     predictions=m.predict(indata)
     
     if outopt=='-o':
+        print('predictions.shape:')
+        print(predictions.shape)
         hickle.dump(predictions, outfile)
     else:
         predictions=predictions[0] # IIRC, there's a useless first dimension in each model output.
@@ -48,7 +52,7 @@ def main(args):
             os.makedirs(outfile)
         
         for p in range(predictions.shape[0]):
-            misc.imsave(predictions[p], os.path.join(outfile, "%d.png" % p))
+            misc.imsave(os.path.join(outfile, "%d.png" % p), predictions[p])
     
 
 

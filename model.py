@@ -23,6 +23,7 @@ import hickle
 from scipy import misc
 import pysaliency
 from scipy.ndimage import zoom
+from scipy.ndimage import filters
 from scipy.misc import logsumexp
 
 class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
@@ -68,11 +69,14 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         print((inputdims[0]/pshape[0], inputdims[1]/pshape[1]))
         prior=zoom(self.prior, (inputdims[0]/pshape[0], inputdims[1]/pshape[1]), order=0, mode="nearest")
         # Normalize?
-        prior-=logsumexp(prior)
+        prior=prior/np.max(prior)
+        #prior-=logsumexp(prior)
+        print("prior min: %f" % np.min(prior))
+        print("prior max: %f" % np.max(prior))
+        #return np.arr([prior])
         
         nt=stimarray.shape[0]
         print("nt: %d" % nt)
-        nt=1700
         batch_size=min(nt, 100)
         print("batch_size: %d" % batch_size)
         
@@ -93,10 +97,12 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         # Now that we have a set of errors, let's do stuff:
         predictions=predictions[0] # Now the first index will be the image, then channels, then pixels.
         print(predictions.shape)
+        outlist=[]
         for i in range(predictions.shape[0]): # For each prediction:
             print(predictions[i].shape)
-            predictions[i]=predictions[i].sum(axis=0) # Sum all channels. axis=0 was summing all elements. Whoops!
-            predictions[i]=predictions[i]*prior # Scale by resized prior distribution.
+            pred=predictions[i].sum(axis=0) # Sum all channels. axis=0 was summing all elements. Whoops!
+            outlist.append(filters.gaussian_filter(pred, 4)) # Scale by resized prior distribution.
+        predictions=np.array(outlist)
         return predictions
         
         
