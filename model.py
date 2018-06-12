@@ -44,7 +44,7 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         
         # We have a pretrained model now. 
         layer_config=train_model.layers[1].get_config()
-        self.layer="E0"
+        self.layer="E3"
         layer_config['output_mode']=self.layer
         self.input_shape=list(train_model.layers[0].batch_input_shape[1:])
         # NOTE: We need to remember to set the input shape at 0 to the number of images in the series.
@@ -95,14 +95,16 @@ class PredSaliencyModel:# (pysaliency.SaliencyMapModel):
         print("Shape of outputs:")
         print(predictions.shape)
         # Now that we have a set of errors, let's do stuff:
-        predictions=predictions[0] # Now the first index will be the image, then channels, then pixels.
-        print(predictions.shape)
-        outlist=[]
-        for i in range(predictions.shape[0]): # For each prediction:
-            print(predictions[i].shape)
-            pred=predictions[i].sum(axis=0) # Sum all channels. axis=0 was summing all elements. Whoops!
-            outlist.append(filters.gaussian_filter(pred, 4)) # Scale by resized prior distribution.
-        predictions=np.array(outlist)
+        if self.layer=="E0":
+            predictions=predictions[0] # Now the first index will be the image, then channels, then pixels.
+            print(predictions.shape)
+            outlist=[]
+            for i in range(predictions.shape[0]): # For each prediction:
+                print(predictions[i].shape)
+                # If it's any other layer, then we want to preserve everything as is.
+                pred=predictions[i].sum(axis=0) # Sum all channels. axis=0 was summing all elements. Whoops!
+                outlist.append(filters.gaussian_filter(pred, 4)) # Scale by resized prior distribution.
+            predictions=np.array(outlist)
         return predictions
         
         

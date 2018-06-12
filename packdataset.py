@@ -91,10 +91,10 @@ def process_im(im, desired_sz):
     im = imresize(im, (desired_sz[0], int(np.round(target_ds * im.shape[1]))))
     d = int((im.shape[1] - desired_sz[1]) / 2)
     im = im[:, d:d+desired_sz[1]]
-    s=im.sum(axis=2)
-    im[:,:,0]=s
-    im[:,:,1]=s
-    im[:,:,2]=s # This will effectively make the image grayscale.
+    #s=im.sum(axis=2)
+    #im[:,:,0]=s
+    #im[:,:,1]=s
+    #im[:,:,2]=s # This will effectively make the image grayscale.
     #print(im.shape)
     return im
 
