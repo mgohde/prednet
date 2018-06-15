@@ -8,8 +8,12 @@ import os
 import sys
 import hickle
 from scipy import misc
+from scipy.ndimage import filters
 from kitti_settings import *
 import numpy as np
+
+def softmax(im):
+    return np.exp(im) / np.sum(np.exp(im), axis=0)
 
 
 def main(args):
@@ -32,8 +36,28 @@ def main(args):
         
         for p in range(predictions.shape[0]):
             #arr=predictions[p]-np.min(predictions[p])
-            arr=np.abs(predictions[p])
-            misc.imsave(os.path.join(outfile, "%d.png" % p), arr)
+            #arr=np.abs(predictions[p])
+            #arr=np.abs(predictions[p])
+            # Scale the array:
+            #print(arr.shape)
+            #arr=arr/arr.max()
+            #arr=arr*255.0
+            im = misc.imresize(predictions[p], (480, 640)).astype("float32")
+            im=im/im.max()
+            im=filters.gaussian_filter(im, 8).astype("float32")
+            # We should probably now normalize the image:
+            #im=im/np.max(im)
+            #im=softmax(im)
+            print(im.max())
+            print(im.min())
+            im[im<im.mean()]=0
+            im=im/im.max()
+            # Todo: consider thresholding the image to remove all noticable large regions of activation.
+            #im=softmax(im)
+            print(im.max())
+            print(im.min())
+            misc.imsave(os.path.join(outfile, "%d.png" % p), im)
+            print("Done")
         return
     
     indata=hickle.load(infile)

@@ -22,8 +22,8 @@ from data_utils import SequenceGenerator
 from kitti_settings import *
 import hickle
 
-weights_file = os.path.join(WEIGHTS_DIR, 'prednet_kitti_weights.hdf5')
-json_file = os.path.join(WEIGHTS_DIR, 'prednet_kitti_model.json')
+weights_file = os.path.join(WEIGHTS_DIR, 'prednet_caltech_weights.hdf5')
+json_file = os.path.join(WEIGHTS_DIR, 'prednet_caltech_model.json')
 
 # Load trained model
 f = open(json_file, 'r')
